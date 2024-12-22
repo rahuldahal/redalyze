@@ -2,6 +2,9 @@ import praw
 import pandas as pd
 from dotenv import dotenv_values
 
+import transform_data
+import analyze_data
+
 config = dotenv_values(".env")
 
 def connection():
@@ -32,22 +35,6 @@ def flatten_raw_data(raw_data):
     })
   return flat_data
 
-# Pandas' logic with the data frame
-def analyze_with_pd(df):
-  print(df.loc[0:10, "title"])
-
-
-
-
-
-
-
-
-
-
-
-
-
 def main():
   reddit = connection()
   
@@ -56,9 +43,24 @@ def main():
   raw_data = reddit.subreddit('premierleague+bundesliga+laliga+seriea+ligue1').hot(limit=10)
   flat_data = flatten_raw_data(raw_data)
   
-  # Convert the flat_data into a Pandas DataFrame and handle business logic
+  # Convert the flat_data into a Pandas DataFrame
   df = pd.DataFrame(flat_data)
-  analyze_with_pd(df)
 
+  # Call transform to load and transform the data
+  transformed_df = transform_data.load_and_transform(df)
+  
+  # Call analyze to perform analysis on the transformed data
+  analyze_data.analyze(transformed_df)
+
+def offline():
+  file_path = './data/index.csv'
+    
+  # Call transform to load and transform the data
+  transformed_df = transform_data.load_and_transform(file_path)
+  
+  # Call analyze to perform analysis on the transformed data
+  analyze_data.analyze(transformed_df)
+  
+  
 if __name__ == "__main__":
-  main()
+  offline()
