@@ -13,11 +13,12 @@ def analyze(transformed_df):
   # upvote_stats = transformed_df.groupby('league')['upvotes'].describe()
   # print(upvote_stats)
   
-  comment_score_stats = transformed_df.groupby('league').agg({
-    'num_comments': ['mean', 'count'],
-    'score': 'mean'
-  })
-  print(comment_score_stats)
+  # comment_score_stats = transformed_df.groupby('league').agg({
+  #   'num_comments': ['mean', 'count'],
+  #   'score': 'mean'
+  # })
+  # print(comment_score_stats)
+
   
   
   # *------- Correlation between columns --------
@@ -25,4 +26,17 @@ def analyze(transformed_df):
   
   # score_to_comment = transformed_df[['score', 'num_comments']].corr()
   # print(f'Correlation: {score_to_comment}')
+  
+  
+  # *----------Sorting and arranging-----------
+  # authors_group = transformed_df.groupby('author')
+  # entries_per_author = authors_group.size() # No.of entries per author group
+  
+  # regular_creators = entries_per_author.sort_values(ascending=False)
+  # top_five_creators = regular_creators.head(5)
+
+  
+  # print(top_five_creators)
+  
+  print('Uncomment every section and see...')
   
