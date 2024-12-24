@@ -40,7 +40,7 @@ def main():
   
   # Fetch posts from a subreddit
   # raw_data = reddit.subreddit('premierleague+bundesliga+laliga+seriea+ligue1').hot(limit=100)
-  raw_data = reddit.subreddit('premierleague+bundesliga+laliga+seriea+ligue1').hot(limit=10)
+  raw_data = reddit.subreddit('all').top(time_filter="week", limit=100)
   flat_data = flatten_raw_data(raw_data)
   
   # Convert the flat_data into a Pandas DataFrame
@@ -53,14 +53,13 @@ def main():
   analyze_data.analyze(transformed_df)
 
 def offline():
-  file_path = './data/index.csv'
+  file_path = './data/top_posts/week.csv'
     
   # Call transform to load and transform the data
   transformed_df = transform_data.load_and_transform(file_path)
   
   # Call analyze to perform analysis on the transformed data
   analyze_data.analyze(transformed_df)
-  
   
 if __name__ == "__main__":
   offline()

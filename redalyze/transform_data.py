@@ -10,17 +10,13 @@ def load_and_transform(file_path):
   df['hour'] = df['created_date'].dt.hour
 
   # Category Classifications
-  df['score_category'] = pd.cut(df['score'], bins=[0, 50, 100, 200, 500, 1000], labels=['low', 'medium', 'high', 'very high', 'top'])
-  df['comment_category'] = pd.cut(df['num_comments'], bins=[0, 10, 50, 100, 200, 300], labels=['few', 'some', 'many', 'trending', 'top'])
+  df['score_category'] = pd.cut(df['score'], bins=[0, 50, 100, 200, 500, 1000], labels=['Low', 'Average', 'High', 'Very High', 'Top Scores'])
+  df['comment_category'] = pd.cut(df['num_comments'], bins=[0, 10, 50, 100, 200, 300], labels=['Few', 'Moderate', 'Many', 'Popular', 'Most Comments'])
+  df['upvote_category'] = pd.cut(df['upvote_ratio'], bins=[0, 0.7, 0.9, 1], labels=['Low', 'Medium', 'High'])
 
-  df['league'] = df['subreddit'].map({
-      'PremierLeague': 'Premier League',
-      'LaLiga': 'La Liga',
-      'Bundesliga': 'Bundesliga',
-      'seriea': 'Serie A',
-      'Ligue1': 'Ligue 1'
-  })
-
+  # Other
+  df['domain'] = df['url'].str.extract(r'https?://(?:www\.)?([^/]+)')
+  
   return df
 
 

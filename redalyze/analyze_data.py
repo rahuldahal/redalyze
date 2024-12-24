@@ -38,5 +38,17 @@ def analyze(transformed_df):
   
   # print(top_five_creators)
   
-  print('Uncomment every section and see...')
+  
+  # * Score vs Upvote ration correlation
+
+  # upvote_stats = transformed_df.groupby('upvote_category').agg({
+  #     'score': 'mean',
+  #     'num_comments': 'mean'
+  # })
+  
+  
+  domain_counts = transformed_df.groupby(['subreddit', 'domain']).size().reset_index(name='counts')
+
+  
+  print(domain_counts)
   
