@@ -53,7 +53,7 @@ def main():
   analyze_data.analyze(transformed_df)
 
 def offline():
-  file_path = './data/top_posts/week.csv'
+  file_path = '../data/top_posts/week.csv'
     
   # Call transform to load and transform the data
   transformed_df = transform_data.load_and_transform(file_path)

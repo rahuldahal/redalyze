@@ -1,3 +1,5 @@
+from visualizations.post_per_hour import post_per_hour
+
 def analyze(transformed_df):  
   # *------ Mean, Median, Quartiles, Standard Deviation, and stuff -------
   # * For specific column: transformed_df[column].describe()
@@ -47,8 +49,10 @@ def analyze(transformed_df):
   # })
   
   
-  domain_counts = transformed_df.groupby(['subreddit', 'domain']).size().reset_index(name='counts')
-
+  # sub_stats = transformed_df.groupby('subreddit').count().reset_index()
+  # per_subreddit = transformed_df.groupby(['subreddit', 'hour']).count()
   
-  print(domain_counts)
+  print(post_per_hour(transformed_df))
   
+  # Post distribution per hour
+  # TODO: 5. Author analysis more: https://chatgpt.com/share/676addf5-56f8-8005-a730-474ac5d96f9f

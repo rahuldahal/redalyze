@@ -6,4 +6,4 @@ def sub_by_post(transformed_df):
     total_posts= ('subreddit', 'count')
   ).reset_index()
   
-  return sub_count
+  return sub_count.sort_values(by='total_posts', ascending=False).head(10)
