@@ -9,7 +9,7 @@ import transform_data
 # from visualizations.common_domain_per_sub import common_domain_per_sub
 from visualizations.sub_by_post import sub_by_post
 from visualizations.post_per_hour import post_per_hour
-# from visualizations.stats_per_author import stats_per_author
+from visualizations.score_upvote_bins import score_upvote_grid
 
 file_path = '../data/top_posts/week.csv'
   
@@ -73,6 +73,19 @@ def post_frequencey_overtime(transformed_df):
   
   return fig
 
+def score_upvote_patterns(transformed_df):
+  heatmap_grid = score_upvote_grid(transformed_df)
+  
+  fig = px.imshow(
+      heatmap_grid,
+      labels=dict(x="Upvote Ratio Category", y="Score Category", color="Post Count"),
+      x=heatmap_grid.columns,
+      y=heatmap_grid.index,
+      # color_continuous_scale="Viridis",
+  )
+  fig.update_layout(title="Heatmap: Score vs Upvote Ratio")
+  return fig
+  
 # def stats_per_author_plot(transformed_df):
 #   df = stats_per_author(transformed_df)
 #   fig = px.bar(df, x='author', y='Average Score', title='Average Scores per Author')
@@ -108,6 +121,12 @@ app.layout = html.Div([
   html.Div([
     html.H2("Post frequency overtime by subreddit"),
     dcc.Graph(figure=post_frequencey_overtime(transformed_df))
+  ]),
+  
+  # Upvote patterns with post score
+  html.Div([
+    html.H2("Upvote patterns with post score"),
+    dcc.Graph(figure=score_upvote_patterns(transformed_df))
   ]),
   
   # Add more visualizations here

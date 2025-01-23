@@ -1,14 +1,9 @@
 # - Detect patterns in highly upvoted content.
 
-def score_upvote_ratio(transformed_df):
-  score_group = transformed_df.groupby('score_category', observed=False)
-  score_group_count = score_group.agg(
-    total_posts=('score', 'count'),
-  ).reset_index()
+def score_upvote_grid(transformed_df):
+  score_upvote_group = transformed_df.groupby(['score_category', 'upvote_category'], observed=False)
+  score_upvote_group_count = score_upvote_group.size().reset_index(name='post_count')
   
-  upvote_group = transformed_df.groupby('upvote_category', observed=False)
-  upvote_group_count = upvote_group.agg(
-    total_posts=('upvote_ratio', 'count'),
-  ).reset_index()
+  pivot_table = score_upvote_group_count.pivot(index='score_category', columns='upvote_category', values='post_count').fillna(0)
   
-  return [score_group_count, upvote_group_count]
+  return pivot_table
