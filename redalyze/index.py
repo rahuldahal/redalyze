@@ -3,13 +3,16 @@
 
 
 import plotly.express as px
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, dash_table
 
 import transform_data
-# from visualizations.common_domain_per_sub import common_domain_per_sub
+
 from visualizations.sub_by_post import sub_by_post
-from visualizations.post_per_hour import post_per_hour
+from visualizations.post_per_hour_per_sub import post_per_hour_per_sub
 from visualizations.score_upvote_bins import score_upvote_grid
+from visualizations.hour_score_mean import hour_score_mean
+from visualizations.post_per_hour import post_per_hour
+from visualizations.top_n_posts import top_n_posts
 
 file_path = '../data/top_posts/week.csv'
   
@@ -17,13 +20,7 @@ file_path = '../data/top_posts/week.csv'
 transformed_df = transform_data.load_and_transform(file_path)
 
 
-
-# Plots and visualizations logic
-# def common_domains_plot(transformed_df):
-#   df = common_domain_per_sub(transformed_df)
-#   fig = px.bar(df, x='domain', y='counts', color='subreddit', title='Common Domains per Subreddit')
-#   return fig
-
+# SUBREDDIT ACTIVITTY
 def sub_by_post_plot(transformed_df):
   df = sub_by_post(transformed_df).melt(id_vars='subreddit', value_vars=['total_posts'],
                         var_name='metric', value_name='value')
@@ -39,6 +36,20 @@ def sub_by_post_plot(transformed_df):
   fig.update_layout(xaxis_title="Subreddit", yaxis_title="Metric Value")
   return fig
 
+def post_frequencey_overtime(transformed_df):
+  fig = px.line(
+    post_per_hour_per_sub(transformed_df),
+    x='created_hour',
+    y='total_posts',
+    color='subreddit',
+    title='Post Frequency Over Time by Subreddit',
+    labels={'created_hour': 'Hour of Day', 'total_posts': 'Number of Posts'},
+    line_shape='linear'
+)
+  
+  return fig
+
+# ENGAGEMENT ANALYSIS
 def scatter_plot_top_subreddits(transformed_df):
   fig = px.scatter(
       transformed_df,
@@ -60,19 +71,6 @@ def scatter_plot_top_subreddits(transformed_df):
   
   return fig
 
-def post_frequencey_overtime(transformed_df):
-  fig = px.line(
-    post_per_hour(transformed_df),
-    x='created_hour',               # X-axis: Hours of the day (created_hour)
-    y='total_posts',                # Y-axis: Number of posts
-    color='subreddit',              # Different lines for each subreddit
-    title='Post Frequency Over Time by Subreddit',
-    labels={'created_hour': 'Hour of Day', 'total_posts': 'Number of Posts'},
-    line_shape='linear'             # You can choose a line shape, like 'linear' or 'spline'
-)
-  
-  return fig
-
 def score_upvote_patterns(transformed_df):
   heatmap_grid = score_upvote_grid(transformed_df)
   
@@ -85,12 +83,35 @@ def score_upvote_patterns(transformed_df):
   )
   fig.update_layout(title="Heatmap: Score vs Upvote Ratio")
   return fig
-  
-# def stats_per_author_plot(transformed_df):
-#   df = stats_per_author(transformed_df)
-#   fig = px.bar(df, x='author', y='Average Score', title='Average Scores per Author')
-#   return fig
 
+# TEMPRAL PATTERNS  
+def average_score_overtime(transformed_df):
+  fig = px.line(
+    hour_score_mean(transformed_df),
+    x='created_hour',
+    y='mean_score',
+    title='Average Score Over Time across subreddits',
+    labels={'created_hour': 'Hour of Day', 'mean_score': 'Average Score'},
+    line_shape='linear'
+)
+  
+  return fig
+
+def hourly_posts(transformed_df):
+  fig = px.histogram(post_per_hour(transformed_df), x='created_hour', y='total_posts')
+  
+  return fig
+
+# TOP POSTS
+def top_10_posts(transformed_df):
+  top_posts = top_n_posts(transformed_df, 10)
+  
+  fig = dash_table.DataTable(
+    data=top_posts.to_dict('records'),
+    columns=[{'name': i, 'id': i} for i in top_posts.columns]
+  )
+  
+  return fig
 
 # Initialize Dash app
 app = Dash(__name__)
@@ -99,22 +120,10 @@ app = Dash(__name__)
 app.layout = html.Div([
   html.H1("Redalyze Dashboard"),
   
-  # Common Domains Visualization
-  # html.Div([
-  #   html.H2("Common Domains per Subreddit"),
-  #   dcc.Graph(figure=common_domains_plot(transformed_df))
-  # ]),
-  
   # Stats per Subreddit Visualization
   html.Div([
     html.H2("Top 10 subreddits by average score, total comments, and total posts"),
     dcc.Graph(figure=sub_by_post_plot(transformed_df))
-  ]),
-  
-  # Scatter plot of Top Subreddits Visualization
-  html.Div([
-    html.H2("Relationship between average score and total comments"),
-    dcc.Graph(figure=scatter_plot_top_subreddits(transformed_df))
   ]),
   
   # Post frequency overtime by subreddit
@@ -123,10 +132,34 @@ app.layout = html.Div([
     dcc.Graph(figure=post_frequencey_overtime(transformed_df))
   ]),
   
+  # Scatter plot of Top Subreddits Visualization
+  html.Div([
+    html.H2("Relationship between average score and total comments"),
+    dcc.Graph(figure=scatter_plot_top_subreddits(transformed_df))
+  ]),
+  
   # Upvote patterns with post score
   html.Div([
     html.H2("Upvote patterns with post score"),
     dcc.Graph(figure=score_upvote_patterns(transformed_df))
+  ]),
+  
+  # Average score overtime
+  html.Div([
+    html.H2("Average score overtime"),
+    dcc.Graph(figure=average_score_overtime(transformed_df))
+  ]),
+  
+  # Posts per hour
+  html.Div([
+    html.H2("Posts per hour"),
+    dcc.Graph(figure=hourly_posts(transformed_df))
+  ]),
+  
+  # Top 10 posts by socre
+  html.Div([
+    html.H2("Top 10 posts by socre"),
+    top_10_posts(transformed_df)
   ]),
   
   # Add more visualizations here
