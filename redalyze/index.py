@@ -8,11 +8,13 @@ from dash import Dash, html, dcc, dash_table
 import transform_data
 
 from visualizations.sub_by_post import sub_by_post
-from visualizations.post_per_hour_per_sub import post_per_hour_per_sub
-from visualizations.score_upvote_bins import score_upvote_grid
-from visualizations.hour_score_mean import hour_score_mean
-from visualizations.post_per_hour import post_per_hour
 from visualizations.top_n_posts import top_n_posts
+from visualizations.top_authors import top_authors
+from visualizations.post_per_hour import post_per_hour
+from visualizations.hour_score_mean import hour_score_mean
+from visualizations.word_frequencies import word_frequencies
+from visualizations.score_upvote_bins import score_upvote_grid
+from visualizations.post_per_hour_per_sub import post_per_hour_per_sub
 
 file_path = '../data/top_posts/week.csv'
   
@@ -22,16 +24,13 @@ transformed_df = transform_data.load_and_transform(file_path)
 
 # SUBREDDIT ACTIVITTY
 def sub_by_post_plot(transformed_df):
-  df = sub_by_post(transformed_df).melt(id_vars='subreddit', value_vars=['total_posts'],
-                        var_name='metric', value_name='value')
+  df = sub_by_post(transformed_df)
 
   fig = px.bar(
       df,
       x='subreddit',
-      y='value',
-      color='metric',
-      title='Top 10 Subreddits by no. of Posts',
-      labels={'value': 'Metric Value', 'subreddit': 'Subreddit'}
+      y='total_posts',
+      title='Top 10 Subreddits by no. of Posts'
   )
   fig.update_layout(xaxis_title="Subreddit", yaxis_title="Metric Value")
   return fig
@@ -113,6 +112,29 @@ def top_10_posts(transformed_df):
   
   return fig
 
+def word_frequency_in_title(transformed_df):
+  fig = px.treemap(
+    word_frequencies(transformed_df),
+    path=["word"],
+    values="frequency",
+    title="Treemap of the most used words in the title"
+  )
+  
+  return fig
+
+# AUTHOR ANALYSIS
+def most_active_creators(transformed_df):
+  authors = top_authors(transformed_df)
+
+  fig = px.bar(
+      authors,
+      x='author',
+      y='num_posts',
+      title='Top 10 Authors by no. of Posts'
+  )
+  fig.update_layout(xaxis_title="Author", yaxis_title="Number of Posts")
+  return fig
+
 # Initialize Dash app
 app = Dash(__name__)
 
@@ -122,7 +144,7 @@ app.layout = html.Div([
   
   # Stats per Subreddit Visualization
   html.Div([
-    html.H2("Top 10 subreddits by average score, total comments, and total posts"),
+    html.H2("Top 10 subreddits by total posts"),
     dcc.Graph(figure=sub_by_post_plot(transformed_df))
   ]),
   
@@ -160,6 +182,18 @@ app.layout = html.Div([
   html.Div([
     html.H2("Top 10 posts by socre"),
     top_10_posts(transformed_df)
+  ]),
+  
+  # Most used words
+  html.Div([
+    html.H2("Most used words"),
+    dcc.Graph(figure=word_frequency_in_title(transformed_df))
+  ]),
+  
+  # Top authors
+  html.Div([
+    html.H2("Top 10 authors by total posts posted"),
+    dcc.Graph(figure=most_active_creators(transformed_df))
   ]),
   
   # Add more visualizations here

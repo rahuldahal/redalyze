@@ -1,4 +1,4 @@
-from visualizations.score_upvote_bins import score_upvote_ratio
+from visualizations.author_sub_network import author_sub_network
 
 def analyze(transformed_df):  
   # *------ Mean, Median, Quartiles, Standard Deviation, and stuff -------
@@ -52,7 +52,7 @@ def analyze(transformed_df):
   # sub_stats = transformed_df.groupby('subreddit').count().reset_index()
   # per_subreddit = transformed_df.groupby(['subreddit', 'hour']).count()
   
-  print(score_upvote_ratio(transformed_df))
+  print(author_sub_network(transformed_df))
   
   # Post distribution per hour
   # TODO: 5. Author analysis more: https://chatgpt.com/share/676addf5-56f8-8005-a730-474ac5d96f9f
