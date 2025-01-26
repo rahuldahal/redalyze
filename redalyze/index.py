@@ -4,6 +4,8 @@
 
 import plotly.express as px
 from dash import Dash, html, dcc, dash_table
+import networkx as nx
+import plotly.graph_objects as go
 
 import transform_data
 
@@ -15,6 +17,8 @@ from visualizations.hour_score_mean import hour_score_mean
 from visualizations.word_frequencies import word_frequencies
 from visualizations.score_upvote_bins import score_upvote_grid
 from visualizations.post_per_hour_per_sub import post_per_hour_per_sub
+from visualizations.score_comment_upvote import score_comment_upvote
+from visualizations.author_sub_network import author_sub_network
 
 file_path = '../data/top_posts/week.csv'
   
@@ -135,6 +139,83 @@ def most_active_creators(transformed_df):
   fig.update_layout(xaxis_title="Author", yaxis_title="Number of Posts")
   return fig
 
+def author_contributions(transformed_df):
+  G = nx.Graph()
+  contributions_df = author_sub_network(transformed_df)
+
+  for _, row in contributions_df.iterrows():
+      G.add_edge(row["author"], row["subreddit"], weight=row["contributions"])
+
+  pos = nx.spring_layout(G)
+
+  node_x = []
+  node_y = []
+  node_labels = []
+  node_colors = []
+
+  for node, coords in pos.items():
+      node_x.append(coords[0])
+      node_y.append(coords[1])
+      node_labels.append(node)
+      if node in set(contributions_df["author"]):
+        node_colors.append("blue")
+      else:
+        node_colors.append("orange")
+
+  edge_x = []
+  edge_y = []
+
+  for edge in G.edges(data=True):
+      x0, y0 = pos[edge[0]]
+      x1, y1 = pos[edge[1]]
+      edge_x.extend([x0, x1, None])
+      edge_y.extend([y0, y1, None])
+
+  edge_trace = go.Scatter(
+      x=edge_x,
+      y=edge_y,
+      line=dict(width=1.5, color="#888"),
+      hoverinfo="none",
+      mode="lines",
+  )
+
+  node_trace = go.Scatter(
+      x=node_x,
+      y=node_y,
+      mode="markers+text",
+      text=node_labels,
+      textposition="top center",
+      marker=dict(
+          size=20,
+          color=node_colors,  # Blue for authors, orange for subreddits
+          line_width=2,
+      ),
+      hoverinfo="text",
+  )
+
+  fig = go.Figure(data=[edge_trace, node_trace])
+  fig.update_layout(
+      showlegend=False,
+      margin=dict(t=0, l=0, b=0, r=0),
+      xaxis=dict(showgrid=False, zeroline=False),
+      yaxis=dict(showgrid=False, zeroline=False),
+  )
+
+  return fig
+
+
+# VARIABLE CORRELATIONS
+def variables_correlation(transformed_df):
+  fig = px.imshow(
+      score_comment_upvote(transformed_df),
+      text_auto=True,
+      color_continuous_scale='Viridis',
+      labels=dict(x="Metrics", y="Metrics", color="Correlation"),
+      title="Correlation Heatmap between score, comments, and upvote ratio."
+  )
+  fig.update_layout(autosize=True)
+  return fig
+
 # Initialize Dash app
 app = Dash(__name__)
 
@@ -194,6 +275,18 @@ app.layout = html.Div([
   html.Div([
     html.H2("Top 10 authors by total posts posted"),
     dcc.Graph(figure=most_active_creators(transformed_df))
+  ]),
+  
+  # Author contributions on subreddit
+  html.Div([
+    html.H2("Author's relationship with subreddits based on volume of contributions"),
+    dcc.Graph(figure=author_contributions(transformed_df))
+  ]),
+  
+  # Correlation Heatmap between score, comments, and upvote ratio.
+  html.Div([
+    html.H2("Correlation Heatmap between score, comments, and upvote ratio."),
+    dcc.Graph(figure=variables_correlation(transformed_df))
   ]),
   
   # Add more visualizations here
