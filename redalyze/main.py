@@ -23,7 +23,7 @@ def flatten_raw_data(raw_data):
   flat_data = []
   for datum in raw_data:
     flat_data.append({
-        'subreddit': datum.subreddit,
+        'subreddit': str(datum.subreddit),
         'id': datum.id,
         'title': datum.title,
         'author': datum.author.name if datum.author else 'N/A',
@@ -64,7 +64,12 @@ def main():
   
   # Call visualize to perform visualization on the transformed data
   print("Visualizing the transformed data...")
-  visualization.visualize(transformed_df)
+  
+  # Set the data in visualization file
+  visualization.set_data(transformed_df)
+
+  # Start Dash app (since it's already defined in visualization.py)
+  visualization.app.run_server(debug=True)
 
 def offline():
   file_path = '../data/top_posts/week.csv'
@@ -82,4 +87,4 @@ def offline():
   visualization.app.run_server(debug=True)
   
 if __name__ == "__main__":
-  offline()
+  main()

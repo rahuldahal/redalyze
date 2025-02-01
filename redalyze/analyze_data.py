@@ -1,4 +1,4 @@
-from visualizations.author_sub_network import author_sub_network
+from filters.author_sub_network import author_sub_network
 
 def analyze(transformed_df):  
   # *------ Mean, Median, Quartiles, Standard Deviation, and stuff -------
