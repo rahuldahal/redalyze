@@ -1,7 +1,12 @@
 import pandas as pd
 
-def load_and_transform(file_path):
-  df = pd.read_csv(file_path)
+def load_and_transform(dataframe=None, file_path=None):
+  if file_path:
+    df = pd.read_csv(file_path)
+  elif dataframe is not None:
+    df = dataframe
+  else:
+    raise ValueError("Error: Either a DataFrame or a file path must be provided!")
 
 
   # Date Transformations

@@ -3,15 +3,18 @@ import pandas as pd
 from dotenv import dotenv_values
 
 import transform_data
-import analyze_data
+import visualization
 
 config = dotenv_values(".env")
 
 def connection():
   return praw.Reddit(
-    client_id=config["REDDIT_CLIENT_ID"],
-    client_secret=config["REDDIT_SECRET"],
-    user_agent=config["REDDIT_USER_AGENT"]
+    # client_id=config["REDDIT_CLIENT_ID"],
+    # client_secret=config["REDDIT_SECRET"],
+    # user_agent=config["REDDIT_USER_AGENT"]
+    client_id="iFIkxi9ipIVjsQW5sQ9CRg",
+    client_secret="9G2TjS26m_Rw5ACtocIW3Clr0g6f9A",
+    user_agent="redalyze by r/Own-Roadride-"
   )
 
 
@@ -24,12 +27,12 @@ def flatten_raw_data(raw_data):
         'id': datum.id,
         'title': datum.title,
         'author': datum.author.name if datum.author else 'N/A',
-        'upvotes': datum.ups,
-        'downvotes': datum.downs,
+        'upvote_ratio': datum.upvote_ratio,
         'score': datum.score,
         'num_comments': datum.num_comments,
-        'comments': datum.comments, # 'top_level_comment' is inside this => top level of the thread
+        # 'comments': datum.comments, # 'top_level_comment' is inside this => top level of the thread
         'created_utc': datum.created_utc,
+        'url': datum.url,
         'awards_received': datum.total_awards_received,
         'flair': datum.flair
     })
@@ -40,26 +43,43 @@ def main():
   
   # Fetch posts from a subreddit
   # raw_data = reddit.subreddit('premierleague+bundesliga+laliga+seriea+ligue1').hot(limit=100)
-  raw_data = reddit.subreddit('all').top(time_filter="week", limit=100)
+  
+  print("Fetching data with PRAW...")
+  raw_data = reddit.subreddit('all').top(time_filter="week", limit=20)
+  
+  print("Flatening the data...")
   flat_data = flatten_raw_data(raw_data)
+
   
   # Convert the flat_data into a Pandas DataFrame
+  print("Converting the data into pandas dataframe...")
   df = pd.DataFrame(flat_data)
 
   # Call transform to load and transform the data
-  transformed_df = transform_data.load_and_transform(df)
+  print("Transforming and cleaning the data...")
+  transformed_df = transform_data.load_and_transform(dataframe=df)
   
   # Call analyze to perform analysis on the transformed data
-  analyze_data.analyze(transformed_df)
+  # analyze_data.analyze(transformed_df)
+  
+  # Call visualize to perform visualization on the transformed data
+  print("Visualizing the transformed data...")
+  visualization.visualize(transformed_df)
 
 def offline():
   file_path = '../data/top_posts/week.csv'
     
   # Call transform to load and transform the data
-  transformed_df = transform_data.load_and_transform(file_path)
+  transformed_df = transform_data.load_and_transform(file_path=file_path)
   
   # Call analyze to perform analysis on the transformed data
-  analyze_data.analyze(transformed_df)
+  # analyze_data.analyze(transformed_df)
+  
+  # Set the data in visualization file
+  visualization.set_data(transformed_df)
+
+  # Start Dash app (since it's already defined in visualization.py)
+  visualization.app.run_server(debug=True)
   
 if __name__ == "__main__":
   offline()
