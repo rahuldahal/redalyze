@@ -68,8 +68,6 @@ def main():
   # Set the data in visualization file
   visualization.set_data(transformed_df)
 
-  # Start Dash app (since it's already defined in visualization.py)
-  visualization.app.run_server(debug=True)
 
 def offline():
   file_path = '../data/top_posts/week.csv'
