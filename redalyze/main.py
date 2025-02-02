@@ -6,16 +6,13 @@ from dotenv import dotenv_values
 import transform_data
 import visualization
 
-config = dotenv_values(".env")
+config = dotenv_values("../.env")
 
 def connection():
   return praw.Reddit(
-    # client_id=config["REDDIT_CLIENT_ID"],
-    # client_secret=config["REDDIT_SECRET"],
-    # user_agent=config["REDDIT_USER_AGENT"]
-    client_id="iFIkxi9ipIVjsQW5sQ9CRg",
-    client_secret="9G2TjS26m_Rw5ACtocIW3Clr0g6f9A",
-    user_agent="redalyze by r/Own-Roadride-"
+    client_id=config["REDDIT_CLIENT_ID"],
+    client_secret=config["REDDIT_SECRET"],
+    user_agent=config["REDDIT_USER_AGENT"]
   )
 
 def get_subreddits():
