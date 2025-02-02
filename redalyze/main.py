@@ -1,3 +1,4 @@
+import sys
 import praw
 import pandas as pd
 from dotenv import dotenv_values
@@ -17,6 +18,20 @@ def connection():
     user_agent="redalyze by r/Own-Roadride-"
   )
 
+def get_subreddits():
+  subreddits = []
+  while True:
+    sub = input("Enter the subreddit to analyze (or 'N' to finish): ").strip()
+    if sub.lower() == 'n':
+      break
+    if sub:
+      subreddits.append(sub)
+
+  if subreddits:
+    return "+".join(subreddits)
+  else:
+    print("No subreddits provided.")
+    sys.exit(1)  # Terminate program
 
 # Create an intermediary list to store relevant data, because the raw data returned by PRAW is not compatible with pandas for analysis
 def flatten_raw_data(raw_data):
@@ -44,29 +59,33 @@ def main():
   # Fetch posts from a subreddit
   # raw_data = reddit.subreddit('premierleague+bundesliga+laliga+seriea+ligue1').hot(limit=100)
   
-  print("Fetching data with PRAW...")
-  raw_data = reddit.subreddit('all').top(time_filter="week", limit=20)
-  
-  print("Flatening the data...")
-  flat_data = flatten_raw_data(raw_data)
+  try:
+    subreddit_query = get_subreddits()
+    raw_data = reddit.subreddit(subreddit_query).top(time_filter="week", limit=50)
+    print(f"Fetching top posts from: {subreddit_query}")
+    
+    print("Flatening the data...")
+    flat_data = flatten_raw_data(raw_data)
 
-  
-  # Convert the flat_data into a Pandas DataFrame
-  print("Converting the data into pandas dataframe...")
-  df = pd.DataFrame(flat_data)
+    # Convert the flat_data into a Pandas DataFrame
+    print("Converting the data into pandas dataframe...")
+    df = pd.DataFrame(flat_data)
 
-  # Call transform to load and transform the data
-  print("Transforming and cleaning the data...")
-  transformed_df = transform_data.load_and_transform(dataframe=df)
-  
-  # Call analyze to perform analysis on the transformed data
-  # analyze_data.analyze(transformed_df)
-  
-  # Call visualize to perform visualization on the transformed data
-  print("Visualizing the transformed data...")
-  
-  # Set the data in visualization file
-  visualization.set_data(transformed_df)
+    # Call transform to load and transform the data
+    print("Transforming and cleaning the data...")
+    transformed_df = transform_data.load_and_transform(dataframe=df)
+    
+    # Call analyze to perform analysis on the transformed data
+    # analyze_data.analyze(transformed_df)
+    
+    # Call visualize to perform visualization on the transformed data
+    print("Visualizing the transformed data...")
+    
+    # Set the data in visualization file
+    visualization.set_data(transformed_df)
+  except Exception as e:
+    print(f"Error: {e}")
+  sys.exit(1) 
 
 
 def offline():
