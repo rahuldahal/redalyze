@@ -7,10 +7,29 @@
 </head>
 <body>
   <h1>Enter a Subreddit</h1>
-  <form method="POST">
-    <input type="text" name="subreddits" placeholder="e.g., premierleague+soccer">
+  <form method="POST" id="subredditForm">
+    <input type="text" name="subreddits" placeholder="e.g., premierleague+soccer" id="subredditInput">
+    
+    <!-- Predefined buttons for popular categories with multiple subreddits -->
+    <h2>Popular Categories</h2>
+    <div>
+      <button type="button" onclick="submitSubreddit('premierleague+soccer')">Football</button>
+      <button type="button" onclick="submitSubreddit('technology+gadgets+technews')">Technology</button>
+      <button type="button" onclick="submitSubreddit('worldnews+news+internationalnews')">World News</button>
+      <button type="button" onclick="submitSubreddit('funny+jokes+memes')">Funny</button>
+      <button type="button" onclick="submitSubreddit('gaming+pcgaming+xbox')">Gaming</button>
+    </div>
+
     <button type="submit">Submit</button>
   </form>
+  
   <a href="/dashboard/">Go to Visualization</a>
+
+  <script>
+    function submitSubreddit(subreddit) {
+      document.getElementById('subredditInput').value = subreddit; // Set subreddit value as concatenated list
+      document.getElementById('subredditForm').submit(); // Submit the form
+    }
+  </script>
 </body>
 </html>

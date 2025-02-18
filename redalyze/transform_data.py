@@ -17,8 +17,8 @@ def load_and_transform(dataframe=None, file_path=None):
   # Category Classifications
   df['score_category'] = pd.cut(
     df['score'],
-    bins=[70000, 100000, 130000, 160000, 190000],
-    labels=['Moderate', 'High', 'Very High', 'Huge'],
+    bins = [200, 1000, 5000, 10000, 25000, 50000, 75000, 100000],
+    labels = ['Low', 'Moderate', 'High', 'Very High', 'Huge', 'Massive', 'Extreme'],
     include_lowest=True
   )
 
@@ -31,8 +31,8 @@ def load_and_transform(dataframe=None, file_path=None):
 
   df['upvote_category'] = pd.cut(
     df['upvote_ratio'],
-    bins=[0, 0.25, 0.5, 0.75, 1],
-    labels=['Low', 'Moderate', 'High', 'Very High'],
+    bins=[0, 0.1, 0.25, 0.5, 0.6, 0.75, 0.85, 1],
+    labels=['Very Low', 'Low', 'Moderate', 'Average', 'High', 'Very High', 'Excellent'],
     include_lowest=True
   )
 
