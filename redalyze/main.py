@@ -3,6 +3,7 @@ from dash_layout import dash_layout
 import pandas as pd
 import transform_data
 from dash import html, dcc
+from dash.dependencies import Output, Input
 from config import get_reddit_connection
 from services.plot_service import PlotService
 from flask import Flask, request, render_template, redirect, url_for
@@ -11,7 +12,7 @@ from flask import Flask, request, render_template, redirect, url_for
 app = Flask(__name__)
 
 # Initialize Dash app inside Flask
-dash_app = dash.Dash(__name__, server=app, routes_pathname_prefix="/dashboard/")
+dash_app = dash.Dash(__name__, server=app, routes_pathname_prefix="/page-1/")
 dash_app.title = "Redalyze Dashboard"
 
 # Global variable to store processed data
@@ -39,7 +40,6 @@ def index():
           'upvote_ratio': post.upvote_ratio,
           'score': post.score,
           'num_comments': post.num_comments,
-          # 'comments': post.comments, # 'top_level_comment' is inside this => top level of the thread
           'created_utc': post.created_utc,
           'url': post.url,
           'awards_received': post.total_awards_received,
@@ -50,7 +50,7 @@ def index():
 
       transformed_df = transform_data.load_and_transform(pd.DataFrame(flat_data))
 
-    return redirect(url_for("/dashboard/"))
+    return redirect(url_for("/page-1/"))
 
   return render_template("index.html")
 
@@ -62,11 +62,59 @@ def create_layout():
 
   vs = PlotService(transformed_df)
 
-  layout =  dash_layout(html, dcc, vs)
+  layout = dash_layout(html, dcc, vs)
   return layout
 
 
-dash_app.layout = create_layout
+# Callback for rendering different pages (This must be defined on `dash_app`)
+@dash_app.callback(
+  Output("page-content", "children"),
+  [Input("url", "pathname")]
+)
+def render_page_content(pathname):
+  vs = PlotService(transformed_df)
+  if pathname == "/page-1":
+    return html.Div([
+      html.H2("Top 10 Subreddits by Total Posts"),
+      dcc.Graph(figure=vs.get_sub_by_post_plot())
+    ])
+  elif pathname == "/page-2":
+    return html.Div([
+      html.H2("Relationship Between Score and Comments"),
+      dcc.Graph(figure=vs.get_scatter_plot_plot())
+    ])
+  elif pathname == "/page-3":
+    return html.Div([
+      html.H2("Average Score Over Time"),
+      dcc.Graph(figure=vs.get_avg_score_overtime_plot())
+    ])
+  elif pathname == "/page-4":
+    return html.Div([
+      html.H2("Top 10 Posts by Score"),
+      vs.get_top_posts_plot()
+    ])
+  elif pathname == "/page-5":
+    return html.Div([
+      html.H2("Top 10 Authors by Total Posts"),
+      dcc.Graph(figure=vs.get_top_authors_plot())
+    ])
+  elif pathname == "/page-6":
+    return html.Div([
+      html.H2("Correlation Heatmap: Score, Comments, Upvote Ratio"),
+      dcc.Graph(figure=vs.get_correlation_heatmap_plot())
+    ])
+  # If the user tries to reach a different page, return a 404 message
+  return html.Div([
+    html.H1("404: Not found", className="text-danger"),
+    html.Hr(),
+    html.P(f"The pathname {pathname} was not recognised..."),
+  ], className="p-3 bg-light rounded-3")
+
+# Add dcc.Location for URL management
+dash_app.layout = html.Div([
+  dcc.Location(id="url", refresh=True),  # This listens to URL changes
+  dash_layout(html, dcc, PlotService(transformed_df))  # The layout we defined earlier
+])
 
 if __name__ == "__main__":
   app.run(debug=True, port=5000)

@@ -4,26 +4,127 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redalyze</title>
+  <style>
+    /* Centering the content using Flexbox */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f7f6; /* Light background for better contrast */
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+      padding: 2rem;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    /* Style for the input search bar */
+    #subredditInput {
+      font-size: 1.25rem;
+      padding: 1rem;
+      width: 80%;
+      max-width: 500px;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    #subredditInput:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    }
+
+    .category-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .category-buttons button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      color: white;
+      background-color: #007bff;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .category-buttons button:hover {
+      background-color: #0056b3;
+    }
+
+    button[type="submit"] {
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      width: 80%;
+      max-width: 500px;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    /* Link styles */
+    a {
+      display: block;
+      margin-top: 1rem;
+      color: #007bff;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <h1>Enter a Subreddit</h1>
-  <form method="POST" id="subredditForm">
-    <input type="text" name="subreddits" placeholder="e.g., premierleague+soccer" id="subredditInput">
-    
-    <!-- Predefined buttons for popular categories with multiple subreddits -->
-    <h2>Popular Categories</h2>
-    <div>
-      <button type="button" onclick="submitSubreddit('premierleague+soccer')">Football</button>
-      <button type="button" onclick="submitSubreddit('technology+gadgets+technews')">Technology</button>
-      <button type="button" onclick="submitSubreddit('worldnews+news+internationalnews')">World News</button>
-      <button type="button" onclick="submitSubreddit('funny+jokes+memes')">Funny</button>
-      <button type="button" onclick="submitSubreddit('gaming+pcgaming+xbox')">Gaming</button>
-    </div>
 
-    <button type="submit">Submit</button>
-  </form>
-  
-  <a href="/dashboard/">Go to Visualization</a>
+  <div class="container">
+    <h1>Enter a Subreddit</h1>
+    <form method="POST" id="subredditForm">
+      <input type="text" name="subreddits" placeholder="e.g., premierleague+soccer" id="subredditInput">
+
+      <!-- Predefined buttons for popular categories with multiple subreddits -->
+      <h2>Popular Categories</h2>
+      <div class="category-buttons">
+        <button type="button" onclick="submitSubreddit('premierleague+soccer')">Football</button>
+        <button type="button" onclick="submitSubreddit('technology+gadgets+technews')">Technology</button>
+        <button type="button" onclick="submitSubreddit('worldnews+news+internationalnews')">World News</button>
+        <button type="button" onclick="submitSubreddit('funny+jokes+memes')">Funny</button>
+        <button type="button" onclick="submitSubreddit('gaming+pcgaming+xbox')">Gaming</button>
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <a href="/dashboard/">Go to Visualization</a>
+  </div>
 
   <script>
     function submitSubreddit(subreddit) {
@@ -31,5 +132,6 @@
       document.getElementById('subredditForm').submit(); // Submit the form
     }
   </script>
+
 </body>
 </html>
