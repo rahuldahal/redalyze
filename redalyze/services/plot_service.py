@@ -1,6 +1,6 @@
 import networkx as nx
 import plotly.express as px
-from dash import dash_table
+from dash import dash_table, html
 import plotly.graph_objects as go
 
 from filters.sub_by_post import sub_by_post
@@ -71,10 +71,57 @@ class PlotService:
     return fig
 
   def get_top_posts_plot(self):
-    top_posts = top_n_posts(self.df, 10) # n = 10 -> Top 10
+    top_posts = top_n_posts(self.df, 10)  # n = 10 -> Top 10
+
     return dash_table.DataTable(
-      data=top_posts.to_dict('records'),
-      columns=[{'name': i, 'id': i} for i in top_posts.columns]
+      columns=[
+        {'name': 'Title', 'id': 'title'},
+        {'name': 'Author', 'id': 'author', 'presentation': 'markdown'},  # Author as clickable link
+        {'name': 'Score', 'id': 'score'},
+        {'name': 'Comments', 'id': 'num_comments'},
+        {'name': 'Visit', 'id': 'post_id', 'presentation': 'markdown'},  # URL as clickable link
+      ],
+      style_cell={
+        'textAlign': 'left',  # Align text to the left for better readability
+        'padding': '8px',  # Add padding to cells for better space
+        'whiteSpace': 'normal',  # Allow text to wrap in the title column
+        'wordBreak': 'break-word',  # Break long words to fit within cell width
+      },
+      style_data_conditional=[
+        {
+          'if': {'column_id': 'author'},
+          'textAlign': 'center',
+          'fontWeight': 'bold',
+          'color': 'blue',
+          'textDecoration': 'underline',
+        },
+        {
+          'if': {'column_id': 'post_id'},
+          'textAlign': 'center',
+          'color': 'blue',
+          'textDecoration': 'underline',
+        },
+        {
+          'if': {'column_id': 'title'},
+          'maxWidth': '480px',
+          'textOverflow': 'ellipsis',
+          'overflow': 'hidden',
+          'whiteSpace': 'nowrap',
+        }
+      ],
+      # Modify the data in the author and url columns to be clickable as links
+      markdown_options={'link_target': '_blank'},
+      # Data transformation to make author and URL fields clickable as links
+      data=[
+        {
+          'title': row['title'],
+          'author': f"[{row['author']}](" + f"https://www.reddit.com/u/{row['author']})",
+          'score': row['score'],
+          'num_comments': row['num_comments'],
+          'post_id': f"[{row['post_id']}](" + f"https://www.reddit.com/r/{row['subreddit']}/comments/{row['post_id']})",
+        }
+        for row in top_posts.to_dict('records')
+      ]
     )
 
   def get_word_frequencies_plot(self):

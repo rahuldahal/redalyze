@@ -4,6 +4,7 @@ import pandas as pd
 import transform_data
 from dash import html, dcc
 from dash.dependencies import Output, Input
+import dash_bootstrap_components as dbc
 from config import get_reddit_connection
 from services.plot_service import PlotService
 from flask import Flask, request, render_template, redirect, url_for
@@ -12,7 +13,8 @@ from flask import Flask, request, render_template, redirect, url_for
 app = Flask(__name__)
 
 # Initialize Dash app inside Flask
-dash_app = dash.Dash(__name__, server=app, routes_pathname_prefix="/page-1/")
+bootstrap_theme = dbc.themes.BOOTSTRAP
+dash_app = dash.Dash(__name__, server=app, external_stylesheets=[bootstrap_theme], routes_pathname_prefix="/page-1/")
 dash_app.title = "Redalyze Dashboard"
 
 # Global variable to store processed data
@@ -34,7 +36,7 @@ def index():
       flat_data = [
         {
           'subreddit': str(post.subreddit),
-          'id': post.id,
+          'post_id': post.id,
           'title': post.title,
           'author': post.author.name if post.author else 'N/A',
           'upvote_ratio': post.upvote_ratio,
@@ -62,7 +64,7 @@ def create_layout():
 
   vs = PlotService(transformed_df)
 
-  layout = dash_layout(html, dcc, vs)
+  layout = dash_layout(html)
   return layout
 
 
@@ -95,10 +97,20 @@ def render_page_content(pathname):
     ])
   elif pathname == "/page-5":
     return html.Div([
+      html.H2("Most used words in titles"),
+      dcc.Graph(figure=vs.get_word_frequencies_plot())
+    ])
+  elif pathname == "/page-6":
+    return html.Div([
       html.H2("Top 10 Authors by Total Posts"),
       dcc.Graph(figure=vs.get_top_authors_plot())
     ])
-  elif pathname == "/page-6":
+  elif pathname == "/page-7":
+    return html.Div([
+      html.H2("Network of Authors and Subreddits"),
+      dcc.Graph(figure=vs.get_author_contributions_plot())
+    ])
+  elif pathname == "/page-8":
     return html.Div([
       html.H2("Correlation Heatmap: Score, Comments, Upvote Ratio"),
       dcc.Graph(figure=vs.get_correlation_heatmap_plot())
@@ -113,7 +125,7 @@ def render_page_content(pathname):
 # Add dcc.Location for URL management
 dash_app.layout = html.Div([
   dcc.Location(id="url", refresh=True),  # This listens to URL changes
-  dash_layout(html, dcc, PlotService(transformed_df))  # The layout we defined earlier
+  dash_layout(html)  # The layout we defined earlier
 ])
 
 if __name__ == "__main__":
