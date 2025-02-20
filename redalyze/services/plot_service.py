@@ -15,6 +15,7 @@ from filters.score_comment_upvote import score_comment_upvote
 from filters.author_sub_network import author_sub_network
 
 class PlotService:
+  # TODO: add a property with info of subreddit details such as name, description, etc.
   def __init__(self, transformed_df):
     self.df = transformed_df
 

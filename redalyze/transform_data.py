@@ -35,10 +35,6 @@ def load_and_transform(dataframe=None, file_path=None):
     labels=['Very Low', 'Low', 'Moderate', 'Average', 'High', 'Very High', 'Excellent'],
     include_lowest=True
   )
-
-
-  # Other
-  df['domain'] = df['url'].str.extract(r'https?://(?:www\.)?([^/]+)')
   
   return df
 
