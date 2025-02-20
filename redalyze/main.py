@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 # Initialize Dash app inside Flask
 bootstrap_theme = dbc.themes.BOOTSTRAP
-dash_app = dash.Dash(__name__, server=app, external_stylesheets=[bootstrap_theme], routes_pathname_prefix="/page-1/")
+dash_app = dash.Dash(__name__, server=app, external_stylesheets=[bootstrap_theme], routes_pathname_prefix="/subreddit-activity/")
 dash_app.title = "Redalyze Dashboard"
 
 # Global variable to store processed data
@@ -52,7 +52,7 @@ def index():
 
       transformed_df = transform_data.load_and_transform(pd.DataFrame(flat_data))
 
-    return redirect(url_for("/page-1/"))
+    return redirect(url_for("/subreddit-activity/"))
 
   return render_template("index.html")
 
@@ -75,46 +75,53 @@ def create_layout():
 )
 def render_page_content(pathname):
   vs = PlotService(transformed_df)
-  if pathname == "/page-1":
+  
+  if pathname == "/subreddit-activity":
     return html.Div([
-      html.H2("Top 10 Subreddits by Total Posts"),
-      dcc.Graph(figure=vs.get_sub_by_post_plot())
+      html.H2("Most active subreddits"),
+      dcc.Graph(figure=vs.get_sub_by_post_plot()),
+      html.H2("Post frequency overtime on different subreddits"),
+      dcc.Graph(figure=vs.get_post_frequency_plot())
     ])
-  elif pathname == "/page-2":
+  
+  elif pathname == "/engagement-analysis":
     return html.Div([
       html.H2("Relationship Between Score and Comments"),
-      dcc.Graph(figure=vs.get_scatter_plot_plot())
+      dcc.Graph(figure=vs.get_scatter_plot_plot()),
+      html.H2("Correlation Between Score and Upvote Ratio"),
+      dcc.Graph(figure=vs.get_score_upvote_plot())
     ])
-  elif pathname == "/page-3":
+    
+  elif pathname == "/temporal-patterns":
     return html.Div([
-      html.H2("Average Score Over Time"),
-      dcc.Graph(figure=vs.get_avg_score_overtime_plot())
+      html.H2("Average score over time"),
+      dcc.Graph(figure=vs.get_avg_score_overtime_plot()),
+      html.H2("Post distribution over time"),
+      dcc.Graph(figure=vs.get_hourly_posts_plot())
     ])
-  elif pathname == "/page-4":
+  
+  elif pathname == "/top-posts":
     return html.Div([
       html.H2("Top 10 Posts by Score"),
-      vs.get_top_posts_plot()
-    ])
-  elif pathname == "/page-5":
-    return html.Div([
+      vs.get_top_posts_plot(),
       html.H2("Most used words in titles"),
       dcc.Graph(figure=vs.get_word_frequencies_plot())
     ])
-  elif pathname == "/page-6":
+  
+  elif pathname == "/author-analysis":
     return html.Div([
       html.H2("Top 10 Authors by Total Posts"),
-      dcc.Graph(figure=vs.get_top_authors_plot())
-    ])
-  elif pathname == "/page-7":
-    return html.Div([
+      dcc.Graph(figure=vs.get_top_authors_plot()),
       html.H2("Network of Authors and Subreddits"),
       dcc.Graph(figure=vs.get_author_contributions_plot())
     ])
-  elif pathname == "/page-8":
+  
+  elif pathname == "/engagement-correlation":
     return html.Div([
       html.H2("Correlation Heatmap: Score, Comments, Upvote Ratio"),
       dcc.Graph(figure=vs.get_correlation_heatmap_plot())
     ])
+  
   # If the user tries to reach a different page, return a 404 message
   return html.Div([
     html.H1("404: Not found", className="text-danger"),
