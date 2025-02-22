@@ -10,3 +10,6 @@ def get_reddit_connection():
     client_secret=os.getenv("REDDIT_SECRET"),
     user_agent=os.getenv("REDDIT_USER_AGENT")
   )
+  
+def get_gemini_key():
+  return os.getenv("GEMINI_API_TOKEN")

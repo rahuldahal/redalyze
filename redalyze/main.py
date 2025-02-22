@@ -9,14 +9,14 @@ import dash_bootstrap_components as dbc
 from config import get_reddit_connection
 from dash.dependencies import Output, Input
 from services.plot_service import PlotService
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, jsonify, send_from_directory
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Initialize Dash app inside Flask
 bootstrap_theme = dbc.themes.BOOTSTRAP
-dash_app = dash.Dash(__name__, server=app, external_stylesheets=[bootstrap_theme], routes_pathname_prefix="/general-info/")
+dash_app = dash.Dash(__name__, server=app, external_stylesheets=[bootstrap_theme], external_scripts=["/static/script.js"], routes_pathname_prefix="/general-info/")
 dash_app.title = "Redalyze Dashboard"
 
 # Global variable to store processed data
@@ -62,6 +62,17 @@ def index():
 def general_info():
   return dash_app.index()
 
+@app.route('/api/interpret', methods=['POST'])
+def interpret():
+    data = request.json
+    print("Received data for AI interpretation:", data)
+    # Call Google Gemini API here and process the data
+    return jsonify({"message": "Data received", "input": data})
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
+  
 # Dash Layout
 def create_layout():
   """Dynamically creates the Dash layout after data is set."""
@@ -81,7 +92,7 @@ def render_page_content(pathname):
   vs = PlotService(transformed_df)
   global source
   
-  return handle_routing(pathname, dcc, html, vs, source)
+  return handle_routing(pathname, vs, source)
   
 
 # Add dcc.Location for URL management
