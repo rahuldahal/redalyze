@@ -4,24 +4,27 @@ from config import get_reddit_connection
 from transform_data import load_and_transform
 from services.genai_service import GenaiService
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory, session
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_caching import Cache
+
+limiter = Limiter(get_remote_address)
+cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def flask_routes(app):
+  limiter.init_app(app)
+  cache.init_app(app)
+
   @app.route("/", methods=["GET", "POST"])
   def index():
     if request.method == "POST":
       subreddits = request.form.get("subreddits")
       if subreddits:
-        # Normalize input (replace spaces & commas with '+')
         subreddits = subreddits.replace(",", " ").replace("+", " ").split()
         subreddits = "+".join(subreddits)
-
-        # Store source in session to persist across requests
         session['source'] = subreddits.split("+")
-
-        # Fetch the data from Reddit and process it
         reddit = get_reddit_connection()
         raw_data = reddit.subreddit(subreddits).top(time_filter="week", limit=50)
-
         flat_data = [
           {
             'subreddit': str(post.subreddit),
@@ -35,23 +38,24 @@ def flask_routes(app):
           }
           for post in raw_data
         ]
-        
-        # Process the data and store it on the server via Flask-Session
         transformed_df = load_and_transform(pd.DataFrame(flat_data))
-        session['transformed_df'] = transformed_df.to_dict()  # Store as dict
+        session['transformed_df'] = transformed_df.to_dict()
 
       return redirect(url_for('general_info'))
-
     return render_template("index.html")
 
   @app.route("/general-info/")
   def general_info():
-    return redirect('/general-info/')  # Redirect to Dash app
+    return redirect('/general-info/')
 
   @app.route('/api/interpret', methods=['POST'])
+  @limiter.limit("5 per minute")
   def interpret():
     plot_type = request.json.get('plot_type')
-    print("Received data for AI interpretation:", plot_type)
+
+    cached_response = cache.get(plot_type)
+    if cached_response:
+      return jsonify({"message": cached_response, "cached": True})
 
     if plot_type in session['plot_data']:
       plot_type_meaning = {
@@ -65,13 +69,14 @@ def flask_routes(app):
         'word_frequencies_plot': 'Word cloud of word frequencies',
         'top_authors_plot': 'Barchart of top authors by no. of posts',
         'author_contribution_plot': 'Network graph of authors on subreddits',
-        'correlation_plot': 'Correlation: Score, Comments, Upvote Ratio',
+        'correlation_heatmap_plot': 'Correlation: Score, Comments, Upvote Ratio',
       }
-      print("Use Genai to interpret plot type:", plot_type)
       gs = GenaiService(api_key=get_gemini_key())
       genai_response = gs.interpret_data(session['plot_data'][plot_type], plot_type_meaning[plot_type])
 
-      return jsonify({"message": genai_response})
+      cache.set(plot_type, genai_response, timeout=30)
+      return jsonify({"message": genai_response, "cached": False})
+
     return jsonify({"message": "No data available for interpretation."})
 
   @app.route('/static/<path:path>')
