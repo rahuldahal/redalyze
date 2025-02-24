@@ -20,12 +20,17 @@ def flask_routes(app):
   def index():
     if request.method == "POST":
       subreddits = request.form.get("subreddits")
+      time_filter = request.form.get("time_filter")
+      limit = request.form.get("limit")
       if subreddits:
         subreddits = subreddits.replace(",", " ").replace("+", " ").split()
         subreddits = "+".join(subreddits)
         session['source'] = subreddits.split("+")
+        session['time_filter'] = time_filter
+        session['limit'] = limit
+       
         reddit = get_reddit_connection()
-        raw_data = reddit.subreddit(subreddits).top(time_filter="week", limit=50)
+        raw_data = reddit.subreddit(subreddits).top(time_filter=time_filter, limit=int(limit))
         flat_data = [
           {
             'subreddit': str(post.subreddit),

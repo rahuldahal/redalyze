@@ -26,13 +26,13 @@ def handle_routing(pathname, vs):
   
   if pathname == "/general-info/":
     return html.Div([
-      html.H2("Data taken from the following subreddits:"),
+      html.H3(f"Analyzing top {session.get('limit', '10')} subreddits from {', '.join(session.get('source', []))} over the {session.get('time_filter', 'Past Day')}."),
       *[html.A(
         id=f"subreddit_link_{index}",
-        children=subreddit,
+        children=f"r/{subreddit}",
         href=f"https://www.reddit.com/r/{subreddit}/",
         target="_blank",
-        className="h3 text-primary d-block mb-2",
+        className="h5 text-primary d-block mb-2",
       ) for index, subreddit in enumerate(session['source'])],
     ])
 

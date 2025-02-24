@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redalyze</title>
   <style>
-    /* Centering the content using Flexbox */
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
-      background-color: #f4f7f6; /* Light background for better contrast */
+      background-color: #f4f7f6;
       font-family: Arial, sans-serif;
     }
 
@@ -32,7 +31,6 @@
       color: #333;
     }
 
-    /* Style for the input search bar */
     #subredditInput {
       font-size: 1.25rem;
       padding: 1rem;
@@ -89,7 +87,6 @@
       background-color: #218838;
     }
 
-    /* Link styles */
     a {
       display: block;
       margin-top: 1rem;
@@ -101,6 +98,22 @@
     a:hover {
       text-decoration: underline;
     }
+
+    select {
+      font-size: 1rem;
+      padding: 1rem;
+      width: 80%;
+      max-width: 500px;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -110,10 +123,25 @@
     <form method="POST" id="subredditForm">
       <input type="text" name="subreddits" placeholder="e.g., technology gadgets technews" id="subredditInput">
 
-      <!-- Predefined buttons for popular categories with multiple subreddits -->
+      <select name="time_filter" id="timeFilter">
+        <option value="hour">Past Hour</option>
+        <option value="day" selected>Past Day</option>
+        <option value="week">Past Week</option>
+        <option value="month">Past Month</option>
+        <option value="year">Past Year</option>
+        <option value="all">All Time</option>
+      </select>
+
+      <select name="limit" id="limit">
+        <option value="50" selected>50 Posts</option>
+        <option value="100">100 Posts</option>
+        <option value="200">200 Posts</option>
+        <option value="400">400 Posts</option>
+      </select>
+
       <h2>Popular Categories</h2>
       <div class="category-buttons">
-        <button type="button" onclick="submitSubreddit('premierleague+bundesliga+laliga+soccer')">Football</button>
+        <button type="button" onclick="submitSubreddit('premierleague+bundesliga+laliga')">Football</button>
         <button type="button" onclick="submitSubreddit('technology+gadgets+technews')">Technology</button>
         <button type="button" onclick="submitSubreddit('worldnews+news+internationalnews')">World News</button>
         <button type="button" onclick="submitSubreddit('funny+jokes+memes')">Funny</button>
@@ -128,8 +156,8 @@
 
   <script>
     function submitSubreddit(subreddit) {
-      document.getElementById('subredditInput').value = subreddit; // Set subreddit value as concatenated list
-      document.getElementById('subredditForm').submit(); // Submit the form
+      document.getElementById('subredditInput').value = subreddit;
+      document.getElementById('subredditForm').submit();
     }
   </script>
 
