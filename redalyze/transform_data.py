@@ -1,6 +1,6 @@
 import pandas as pd
 
-def load_and_transform(dataframe=None, file_path=None):
+def load_and_transform(dataframe=None, file_path=None, timezone=''):
   if file_path:
     df = pd.read_csv(file_path)
   elif dataframe is not None:
@@ -11,6 +11,8 @@ def load_and_transform(dataframe=None, file_path=None):
 
   # Date Transformations
   df['created_date'] = pd.to_datetime(df['created_utc'], unit='s')
+  df['created_date'] = df['created_date'].dt.tz_localize('UTC').dt.tz_convert(timezone)
+
   df['day_of_week'] = df['created_date'].dt.day_name() # Sunday, Monday, etc
   df['created_hour'] = df['created_date'].dt.hour
 

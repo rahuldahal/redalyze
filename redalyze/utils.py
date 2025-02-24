@@ -2,9 +2,18 @@ import os
 import json
 from datetime import datetime, timedelta
 
+import pytz
+import requests
+
 RATE_LIMIT_FILE = "storage/rate_limits.json"
 CACHE_FILE = "storage/cache.json"
 STORAGE_DIR = "storage"
+
+def get_local_timezone(ip):
+  response = requests.get(f'https://ipinfo.io/{ip}/json')
+  data = response.json()
+  timezone = data.get('timezone', 'UTC')
+  return pytz.timezone(timezone)
 
 def ensure_storage_exists():
   if not os.path.exists(STORAGE_DIR):

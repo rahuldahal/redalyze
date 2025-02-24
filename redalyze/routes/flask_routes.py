@@ -1,7 +1,7 @@
 import pandas as pd
 from config import get_gemini_key
 from config import get_reddit_connection
-from utils import load_cache, save_cache, check_rate_limit
+from utils import get_local_timezone, load_cache, save_cache, check_rate_limit
 from transform_data import load_and_transform
 from services.genai_service import GenaiService
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory, session
@@ -25,9 +25,11 @@ def flask_routes(app):
       if subreddits:
         subreddits = subreddits.replace(",", " ").replace("+", " ").split()
         subreddits = "+".join(subreddits)
+        
         session['source'] = subreddits.split("+")
         session['time_filter'] = time_filter
         session['limit'] = limit
+        session['timezone'] = get_local_timezone(request.remote_addr)
        
         reddit = get_reddit_connection()
         raw_data = reddit.subreddit(subreddits).top(time_filter=time_filter, limit=int(limit))
@@ -44,7 +46,7 @@ def flask_routes(app):
           }
           for post in raw_data
         ]
-        transformed_df = load_and_transform(pd.DataFrame(flat_data))
+        transformed_df = load_and_transform(pd.DataFrame(flat_data), timezone=session['timezone'])
         session['transformed_df'] = transformed_df.to_dict()
       return redirect(url_for('general_info'))
     return render_template("index.html")
