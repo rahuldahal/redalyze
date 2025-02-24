@@ -1,6 +1,7 @@
 import pandas as pd
 from config import get_gemini_key
 from config import get_reddit_connection
+from utils import load_cache, save_cache, check_rate_limit
 from transform_data import load_and_transform
 from services.genai_service import GenaiService
 from flask import request, render_template, redirect, url_for, jsonify, send_from_directory, session
@@ -40,7 +41,6 @@ def flask_routes(app):
         ]
         transformed_df = load_and_transform(pd.DataFrame(flat_data))
         session['transformed_df'] = transformed_df.to_dict()
-
       return redirect(url_for('general_info'))
     return render_template("index.html")
 
@@ -51,9 +51,15 @@ def flask_routes(app):
   @app.route('/api/interpret', methods=['POST'])
   @limiter.limit("5 per minute")
   def interpret():
-    plot_type = request.json.get('plot_type')
+    ip_address = request.remote_addr
+    limit_key = "interpret"
+    
+    if not check_rate_limit(ip_address, limit_key):
+      return jsonify({"message": "Rate limit exceeded. Please try again later."}), 429
 
+    plot_type = request.json.get('plot_type')
     cached_response = cache.get(plot_type)
+    
     if cached_response:
       return jsonify({"message": cached_response, "cached": True})
 
@@ -73,8 +79,11 @@ def flask_routes(app):
       }
       gs = GenaiService(api_key=get_gemini_key())
       genai_response = gs.interpret_data(session['plot_data'][plot_type], plot_type_meaning[plot_type])
-
-      cache.set(plot_type, genai_response, timeout=30)
+      
+      cache_data = load_cache()
+      cache_data[plot_type] = genai_response
+      save_cache(cache_data)
+      
       return jsonify({"message": genai_response, "cached": False})
 
     return jsonify({"message": "No data available for interpretation."})
